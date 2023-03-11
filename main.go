@@ -1,7 +1,7 @@
 package main
 
 import (
-	// "fmt"
+	"fmt"
 	"log"
 
 	"github.com/jroimartin/gocui"
@@ -25,7 +25,15 @@ func main() {
 		log.Panicln(err)
 	}
 
+	if err := g.SetKeybinding("view1", 'g', gocui.ModNone, view1Print); err != nil {
+		log.Panicln(err)
+	}
+
 	if err := g.SetKeybinding("", '2', gocui.ModNone, view2); err != nil {
+		log.Panicln(err)
+	}
+
+	if err := g.SetKeybinding("view2", 'g', gocui.ModNone, view2Print); err != nil {
 		log.Panicln(err)
 	}
 
@@ -34,23 +42,11 @@ func main() {
 	}
 }
 
-func updateView(g *gocui.Gui, v *gocui.View) error {
-	// Check if the view is active
-	if v != nil && v == g.CurrentView() {
-		// If the view is active, set its background color to yellow
-		v.BgColor = gocui.ColorYellow
-	} else {
-		// If the view is not active, set its background color to default (nothing)
-		v.BgColor = gocui.ColorDefault
-	}
-
-	return nil
-}
-
 func layout(g *gocui.Gui) error {
 	// maxX, maxY := g.Size()
 
 	g.Highlight = true
+	g.SelFgColor = gocui.ColorGreen
 
 	// Create a new view with the name "myView"
 	if v, err := g.SetView("view1", 0, 0, 20, 10); err != nil {
@@ -59,9 +55,12 @@ func layout(g *gocui.Gui) error {
 		}
 
 		// Set the default background color of the view to nothing
-		v.BgColor = gocui.ColorDefault
 		v.Title = "View 1"
 		v.Wrap = false
+
+		if _, err := g.SetCurrentView("view1"); err != nil {
+			return err
+		}
 		// fmt.Fprintln(v, "View 1")
 	}
 
@@ -71,11 +70,8 @@ func layout(g *gocui.Gui) error {
 			log.Panicln(err)
 		}
 
-		// Set the default background color of the view to nothing
-		v.BgColor = gocui.ColorDefault
 		v.Title = "View 2"
 		v.Wrap = false
-		// fmt.Fprintln(v, "View 2")
 	}
 
 	return nil
@@ -86,7 +82,17 @@ func view1(g *gocui.Gui, v *gocui.View) error {
 		return err
 	}
 
-	updateHighlighting(g, v)
+	return nil
+}
+
+func view1Print(g *gocui.Gui, v *gocui.View) error {
+	fmt.Fprintln(v, "Foobar")
+
+	return nil
+}
+
+func view2Print(g *gocui.Gui, v *gocui.View) error {
+	fmt.Fprintln(v, "Goobar")
 
 	return nil
 }
@@ -94,23 +100,6 @@ func view1(g *gocui.Gui, v *gocui.View) error {
 func view2(g *gocui.Gui, v *gocui.View) error {
 	if _, err := g.SetCurrentView("view2"); err != nil {
 		return err
-	}
-
-	updateHighlighting(g, v)
-
-	return nil
-}
-
-func updateHighlighting(g *gocui.Gui, v *gocui.View) error {
-
-	current := g.CurrentView()
-
-	for _, view := range g.Views() {
-		if view == current {
-			current.BgColor = gocui.ColorGreen
-		} else {
-			view.BgColor = gocui.ColorDefault
-		}
 	}
 
 	return nil
